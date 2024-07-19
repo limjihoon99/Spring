@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+
+<html th:replace="~{layout/baseLayout :: layout(~{::title}, ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+	<head>
+		<title>스프링 부트 웹</title>
+	</head>
+	<body>
+		<main>
+			<h3>1. 학생 조회</h3>
+			<a th:href="@{/student/search}">View Details</a>
+
+			<!--
+			<h4 th:if="${message != null}" th:text="${message}"></h4>
+			<input type="text" th:if="${message != null}" th:value="${message}"/>
+
+			<ul>
+				<li th:each="name : ${names}" th:text="${name}"></li>
+			</ul>
+			-->
+
+			<h3>2. 학생 등록</h3>
+			<a th:href="@{/student/enroll}">View Details</a>
+
+			<h3>3. 학과 조회</h3>
+			<a th:href="@{/department/search}">View Details</a>
+
+		</main>
+	</body>
+</html>

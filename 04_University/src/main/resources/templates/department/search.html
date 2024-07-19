@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+
+<html th:replace="~{layout/baseLayout :: layout(~{::title}, ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>학과 조회</title>
+</head>
+<body>
+<main>
+    <h3>학과 조회</h3>
+
+    <form th:action="@{/department/search}" method="get" th:with="deptNo=${#strings.toString(param.deptNo)}">
+        <label for="deptNo">학과 : </label>
+        <select id="deptNo" name="deptNo">
+            <option>--------선택--------</option>
+            <option th:each="department : ${departments}" th:text="${department.name}" th:value="${department.no}"
+                    th:selected="${deptNo eq department.no}">
+            </option>
+
+        </select>
+        <input type="submit" value="검색">
+    </form>
+
+    <form th:each="department : ${departmentDetail}">
+        <p>학과 번호: <span th:text="${department.no}"></span></p>
+        <p>학과 이름: <span th:text="${department.name}"></span></p>
+        <p>계열: <span th:text="${department.category}"></span></p>
+        <p>개설 여부: <span th:text="${department.openYn}"></span></p>
+        <p>정원: <span th:text="${department.capacity}"></span></p>
+        <p>학생 목록:</p>
+    </form>
+
+    <table border="1">
+        <tr>
+            <th>학번</th>
+            <th>이름</th>
+            <th>주민등록번호</th>
+            <th>주소</th>
+            <th>휴학 여부</th>
+        </tr>
+        <tr th:if="${students == null}">
+            <th colspan="5">조회된 데이터가 없습니다.</th>
+        </tr>
+        <tr th:if="${students != null}" th:each="student : ${students}" >
+            <td>
+                <a th:text="${student.no}"
+                   th:href="@{/student/info(sno=${student.no})}">
+                </a>
+            </td>
+            <td th:text="${student.name}"></td>
+            <td th:text="${student.ssn}"></td>
+            <td th:text="${student.address}"></td>
+            <td th:text="${student.absenceYn}"></td>
+        </tr>
+    </table>
+</main>
+</body>
+</html>

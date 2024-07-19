@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+
+<html th:replace="~{layout/baseLayout :: layout(~{::title}, ~{::main})}" xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <title>학생 상세 조회</title>
+    </head>
+    <body>
+        <main>
+            <h3>학생 상세 조회</h3>
+
+            <form th:action="@{/student/update}" method="post" th:object="${student}">
+                <label for="no">학번: </label>
+                <input type="text" th:field="*{no}" readonly>
+
+                <br><br>
+
+                <label>학과: </label>
+                <select th:field="*{deptNo}">
+                    <option th:each="department: ${departments}"
+                            th:value="${department.no}"
+                            th:text="${department.name}">
+                    </option>
+                </select>
+
+                <br><br>
+
+                <label for="name">이름: </label>
+                <input type="text" th:field="*{name}">
+
+                <br><br>
+
+                <label for="ssn">주민등록 번호: </label>
+                <input type="text" th:field="*{ssn}" maxlength="14">
+
+                <br><br>
+
+                <label for="address">주소: </label>
+                <input type="text" th:field="*{address}">
+
+                <br><br>
+
+                <label>입학년도: </label>
+                <span th:text="*{#temporals.format(entranceDate, 'yyyy')}"></span>년도
+
+                <br><br>
+
+                <label>휴학 여부: </label>
+                <select th:field="*{absenceYn}">
+                    <option value="N">재학중</option>
+                    <option value="Y">휴학중</option>
+                </select>
+
+                <br><br>
+
+                <input type="submit" value="수정">
+                <input type="button" onclick="deleteStudent();" value="삭제">
+
+            </form>
+            <form id="deleteForm" th:action="@{/student/delete}" method="post">
+                <input type="hidden" name="sno" th:value="${student.no}">
+            </form>
+
+            <script>
+
+                function deleteStudent() {
+                    if(confirm("정말로 삭제하시겠습니까?")) {
+                        // const deleteForm = document.getElementById("deleteForm");
+                        //
+                        // deleteForm.submit();
+
+                        document.getElementById("deleteForm").submit();
+                    }
+                }
+
+            </script>
+
+        </main>
+    </body>
+</html>

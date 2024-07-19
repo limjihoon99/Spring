@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.beyond.university.student.model.mapper.DepartmentMapper">
+    <!--
+        resultMap은 DB의 조회 결과와 자바 객체를 명시적으로 매핑해줄 때 사용한다.
+    -->
+    <resultMap id="departmentResultMap" type="Department">
+        <!-- 조회 결과의 기본 키(PK) 컬럼을 매핑한다. -->
+        <!-- property : 자바 객체의 필드명을 기술, column : 조회 결과의 열이름을 기술 -->
+        <id property="no" column="department_no"/>
+        <!-- 조회 결과의 일반 컬럼을 매핑한다. -->
+        <result property="name" column="department_name"/>
+        <result property="category" column="category"/>
+        <result property="openYn" column="open_yn"/>
+        <result property="capacity" column="capacity"/>
+    </resultMap>
+
+    <!--
+    학과 상세 조회(학생 정보 포함)
+    -->
+    <resultMap id="departmentResultMapWithStudent" type="Department" extends="departmentResultMap">
+        <!--
+        1. 쿼리문을 각각 만들어서 하나의 ResultMap에서 매핑하는 방법
+
+        <collection property="students" javaType="arrayList"
+            select="com.beyond.university.student.model.mapper.StudentMapper.selectAllByDeptNo"
+            column="department_no"/>
+
+        2. 하나의 쿼리문을 만들어서 ResultMap에서 매핑하는 방법
+        -->
+        <collection property="students" javaType="arrayList" columnPrefix="s_"
+                    resultMap="com.beyond.university.student.model.mapper.StudentMapper.studentResultMap"/>
+    </resultMap>
+
+    <!--
+        쿼리문의 수행 결과를 담은 ResultSet은 resultType의 객체에 조회 결과를 자동으로 매핑해서 리턴한다.
+        단, 조회 결과의 컬럼명과 자바 클래스에서 필드명이 동일해야 자동으로 매핑된다. (대소문자는 구분하지 않음)
+
+    <select id="selectAll" resultType="Department">
+    -->
+    <select id="selectAll" resultMap="departmentResultMap">
+        <!--
+        방법 1) 쿼리문에 "AS 별칭"으로 조회되는 컬럼명을 변경한다.
+        SELECT department_no AS 'no',
+               department_name AS 'name',
+               category,
+               open_yn AS 'openYn',
+               capacity
+        FROM tb_department
+        ORDER BY department_name ASC
+        -->
+        <!--
+        방법 2) resultMap을 이용해서 명시적으로 컬럼과 필드를 매핑시켜준다.
+        -->
+        SELECT department_no,
+        department_name,
+        category,
+        open_yn,
+        capacity
+        FROM tb_department
+        ORDER BY department_name ASC
+    </select>
+
+    <!--
+    <select id="selectDepartmentByDeptNo" parameterType="string" resultMap="departmentResultMap">
+        SELECT department_no,
+               department_name,
+               category,
+               open_yn,
+               capacity
+        FROM tb_department
+        WHERE department_no = #{deptNo}
+    </select>
+    -->
+
+    <!--
+    1. 쿼리문을 각각 만들어서 하나의 ResultMap에서 매핑하는 방법
+    <select id="selectDepartmentByDeptNo" parameterType="string" resultMap="departmentResultMapWithStudent">
+        SELECT department_no,
+               department_name,
+               category,
+               open_yn,
+               capacity
+        FROM tb_department
+        WHERE department_no = #{deptNo}
+    </select>
+
+    2. 하나의 쿼리문을 만들어서 ResultMap에서 매핑하는 방법
+    -->
+    <select id="selectDepartmentByDeptNo" parameterType="string" resultMap="departmentResultMapWithStudent">
+        SELECT td.department_no,
+               td.department_name,
+               td.category,
+               td.open_yn,
+               td.capacity,
+               ts.student_no AS 's_student_no',
+                ts.department_no AS 's_department_no',
+                ts.student_name AS 's_student_name',
+                ts.student_ssn AS 's_student_ssn',
+                ts.student_address AS 's_student_address',
+                ts.entrance_date AS 's_entrance_date',
+                ts.absence_yn AS 's_absence_yn',
+                ts.coach_professor_no AS 's_coach_professor_no'
+        FROM tb_department td
+                 INNER JOIN tb_student ts ON td.department_no = ts.department_no
+        WHERE td.department_no = #{deptNo}
+    </select>
+</mapper>

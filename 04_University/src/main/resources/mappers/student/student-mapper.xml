@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.beyond.university.student.model.mapper.StudentMapper">
+    <!--
+    중복되는 쿼리 내용을 재사용하기 위한 SQL 조각으로 사용하려는 태그보다 위에 있어야 한다.
+    -->
+    <sql id="selectStudentSql">
+        SELECT student_no,
+               department_no,
+               student_name,
+               student_ssn,
+               student_address,
+               entrance_date,
+               absence_yn,
+               coach_professor_no
+        FROM tb_student
+    </sql>
+
+    <resultMap id="studentResultMap" type="Student">
+        <id property="no" column="student_no"/>
+        <result property="deptNo" column="department_no"/>
+        <result property="name" column="student_name"/>
+        <result property="ssn" column="student_ssn"/>
+        <result property="address" column="student_address"/>
+        <result property="entranceDate" column="entrance_date"/>
+        <result property="absenceYn" column="absence_yn"/>
+        <result property="coachProfessorNo" column="coach_professor_no"/>
+    </resultMap>
+
+    <!--
+        1. 쿼리문 각각 만들어서 하나의 ResultMap에서 매핑하는 방법
+          extends 속성은 다른 resultMap을 상속하는 속성이다.
+
+          association 태그는 객체에 해당하는 필드에 조회 결과를 매핑할 때 사용한다.
+            select 속성은 조회하고자 하는 select 쿼리문의 id를 입력한다.
+            column 속성은 조회하고자 하는 쿼리문에 파라미터를 전달할 때 사용한다.
+    <resultMap id="studentResultMapWithDepartment" type="Student" extends="studentResultMap">
+        <association property="department" javaType="Department"
+            select="com.beyond.university.student.model.mapper.DepartmentMapper.selectDepartmentByDeptNo"
+            column="department_no"/>
+    </resultMap>
+    -->
+
+    <!--
+        2. 하나의 쿼리문을 만들어서 ResultMap에서 매핑하는 방법
+           resultMap 속성은 조회 결과 중에 association 요소로 매핑할 객체의 resultMap의 id를 지정한다.
+           columnPrefix 속성은 조회 결과 중에 대상이 되는 열을 선택하기 위해 사용한다.
+    -->
+    <resultMap id="studentResultMapWithDepartment" type="Student" extends="studentResultMap">
+        <association property="department" javaType="Department" columnPrefix="d_"
+                     resultMap="com.beyond.university.student.model.mapper.DepartmentMapper.departmentResultMap"/>
+    </resultMap>
+
+    <!--
+    외부에서 전달받는 파라미터가 있으면 해당하는 파라미터의 타입을 지정해야 한다. (parameterType="string")
+    외부에서 전달받은 파라미터 값은 #{파라미터명}으로 가져온다.
+    -->
+    <select id="selectAllByDeptNo" parameterType="string"
+            resultMap="studentResultMap">
+        <include refid="selectStudentSql"/>
+        WHERE department_no = #{deptNo}
+    </select>
+
+    <!--
+    <select id="selectStudentByNo" parameterType="string"
+            resultMap="studentResultMap">
+        <include refid="selectStudentSql"/>
+        WHERE student_no = #{sno}
+    </select>
+    -->
+
+    <!-- 학생 상세 조회 (학과 정보 포함) -->
+    <!--
+    1. 쿼리문 각각 만들어서 하나의 ResultMap에서 매핑하는 방법
+    <select id="selectStudentByNo" parameterType="string"
+            resultMap="studentResultMapWithDepartment">
+        <include refid="selectStudentSql"/>
+        WHERE student_no = #{sno}
+    </select>
+    -->
+
+    <!--
+    2. 하나의 쿼리문을 만들어서 ResultMap에서 매핑하는 방법
+    -->
+    <select id="selectStudentByNo" parameterType="string"
+            resultMap="studentResultMapWithDepartment">
+        SELECT ts.student_no,
+               ts.department_no,
+               ts.student_name,
+               ts.student_ssn,
+               ts.student_address,
+               ts.entrance_date,
+               ts.absence_yn,
+               ts.coach_professor_no,
+               td.department_no AS 'd_department_no',
+                td.department_name AS 'd_department_name',
+                td.category AS 'd_category',
+                td.open_yn AS 'd_open_yn',
+                td.capacity AS 'd_capacity'
+        FROM tb_student ts
+                 LEFT OUTER JOIN tb_department td ON ts.department_no = td.department_no
+        WHERE ts.student_no = #{sno}
+    </select>
+
+    <insert id="insertStudent" parameterType="Student">
+        <selectKey resultType="string" keyProperty="no" order="BEFORE">
+            SELECT CONCAT('A', RPAD(FLOOR((RAND() * 100000) + 1), 6, '0'))
+        </selectKey>
+
+        INSERT INTO tb_student (
+        student_no,
+        department_no,
+        student_name,
+        student_ssn,
+        student_address,
+        entrance_date,
+        absence_yn,
+        coach_professor_no
+        ) VALUES (
+        #{no},
+        #{deptNo},
+        #{name},
+        #{ssn},
+        #{address},
+        CURDATE(),
+        'N',
+        NULL
+        )
+    </insert>
+
+    <update id="updateStudent" parameterType="Student">
+        UPDATE tb_student
+        SET
+            department_no = #{deptNo},
+            student_name = #{name},
+            student_ssn = #{ssn},
+            student_address = #{address},
+            absence_yn = #{absenceYn}
+        WHERE student_no = #{no}
+    </update>
+
+    <delete id="deleteStudent" parameterType="string">
+        DELETE
+        FROM tb_student
+        WHERE student_no = #{sno}
+    </delete>
+</mapper>
