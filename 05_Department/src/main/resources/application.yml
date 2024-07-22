@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: department-server
+  datasource:
+    url: jdbc:mysql://localhost:3306/web?serverTimezone=UTC&characterEncoding=UTF-8&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+mybatis:
+  type-aliases-package: com.beyond.department.vo
+  mapper-locations:
+  - classpath:mappers/**/*.xml
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+  paths-to-match:
+    - /v1/**
