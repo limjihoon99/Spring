@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="com.beyond.subject.mapper.SubjectMapper">
+
+	<resultMap id="subjectResultMap" type="Subject">
+		<id property="no" column="CLASS_NO"/>
+		<result property="deptNo" column="DEPARTMENT_NO"/>
+		<result property="preattendingNo" column="PREATTENDING_CLASS_NO"/>
+		<result property="name" column="CLASS_NAME"/>
+		<result property="type" column="CLASS_TYPE"/>
+	</resultMap>
+
+    <select id="selectSubjectCount" resultType="_int">
+        SELECT COUNT(*) FROM tb_class
+    </select>
+	
+	<select id="selectAll" parameterType="string" resultMap="subjectResultMap">
+		SELECT class_no,
+			   department_no,
+			   preattending_class_no,
+		 	   class_name,
+		 	   class_type
+		FROM tb_class
+		ORDER BY class_name ASC
+	</select>
+
+    <select id="selectSubjectSubjectNo" parameterType="string" resultMap="subjectResultMap">
+		SELECT class_no,
+			   department_no,
+			   preattending_class_no,
+		 	   class_name,
+		 	   class_type
+		FROM tb_class
+		WHERE class_no = #{subjectNo}
+	</select>
+
+	<insert id="insertSubject" parameterType="Subject">
+        <selectKey resultType="string" keyProperty="no" order="BEFORE">
+			SELECT CONCAT('C', RPAD(FLOOR(RAND() * 1000000) + 1, 7, '0'))
+		</selectKey>
+
+		INSERT INTO tb_class (
+			class_no,
+		    department_no,
+		    preattending_class_no,
+	 	    class_name,
+	 	    class_type
+		) VALUES (
+			#{no},
+			#{deptNo},
+			#{preattendingNo},
+			#{name},
+			#{type}
+		)
+	</insert>
+	
+	<update id="updateSubject" parameterType="Subject">
+		UPDATE tb_class		
+		<set>
+			<if test="deptNo != null">
+				department_no = #{deptNo},
+			</if>
+			<if test="preattendingNo != null">
+				preattending_class_no = #{preattendingNo},
+			</if>
+			<if test="name != null">
+				class_name = #{name},
+			</if>
+			<if test="type != null">
+				class_type = #{type}
+			</if>
+		</set>
+		WHERE class_no = #{no}
+	</update>
+
+    <delete id="deleteSubject" parameterType="string">
+        DELETE
+		FROM tb_class
+		WHERE class_no = #{subjectNo}
+    </delete>
+</mapper>
